@@ -1,106 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>二维码扫描器</title>
-		<script src="html5-qrcode.min.js"></script>
-		<style>
-			body {
-				font-family: Arial, sans-serif;
-				margin: 0;
-				padding: 0;
-				box-sizing: border-box;
-			}
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二维码扫描器</title>
+    <script src="html5-qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-			.container {
-				display: flex;
-				flex-direction: column;
-				align-items: center;
-				padding: 20px;
-				position: relative;
-			}
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
 
-			.input-container {
-				display: flex;
-				align-items: center;
-				margin-bottom: 20px;
-			}
+        .input-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
-			#input-field {
-				width: 200px;
-				padding: 10px;
-				font-size: 16px;
-			}
+        #input-field {
+            width: 200px;
+            padding: 10px;
+            font-size: 16px;
+        }
 
-			#scan-btn {
-				padding: 10px 15px;
-				margin-left: 10px;
-				cursor: pointer;
-				background-color: #4CAF50;
-				color: white;
-				border: none;
-				border-radius: 5px;
-			}
+        #scan-btn {
+            padding: 10px 15px;
+            margin-left: 10px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
 
-			#reader {
-				width: 100%;
-				max-width: 500px;
-				height: auto;
-				margin-top: 20px;
-			}
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            margin-top: 20px;
+        }
 
-			@media (max-width: 768px) {
-				#reader {
-					max-width: 100%;
-					height: 250px;
-				}
-			}
-		</style>
-	</head>
-	<body>
+        @media (max-width: 768px) {
+            #reader {
+                max-width: 100%;
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
 
-		<div class="container">
-			<div class="input-container">
-				<input type="text" id="input-field" placeholder="扫描结果会显示在这里">
-				<button id="scan-btn" onclick="startScanner()">扫描二维码</button>
-			</div>
-			<div id="reader"></div>
-		</div>
+<div class="container">
+    <div class="input-container">
+        <input type="text" id="input-field" placeholder="扫描结果会显示在这里">
+        <button id="scan-btn" onclick="startScanner()">扫描二维码</button>
+    </div>
+    <div id="reader"></div>
+</div>
 
-		<script type="text/javascript">
-			var html5QrcodeScanner;
+<script type="text/javascript">
+    var html5QrcodeScanner;
 
-			function onScanSuccess(qrCodeMessage) {
-				// 将扫描结果填入输入框
-				document.getElementById('input-field').value = qrCodeMessage;
-				stopScanner(); // 扫描成功后停止扫描
-			}
+    function onScanSuccess(qrCodeMessage) {
+        // 将扫描结果填入输入框
+        document.getElementById('input-field').value = qrCodeMessage;
+        stopScanner(); // 扫描成功后停止扫描
+    }
 
-			function onScanError(errorMessage) {
-				// 处理扫描错误，可以为空
-			}
+    function onScanError(errorMessage) {
+        // 处理扫描错误，可以为空
+    }
 
-			function startScanner() {
-				// 启动相机扫描
-				html5QrcodeScanner = new Html5QrcodeScanner(
-					"reader", {
-						fps: 10,
-						qrbox: 250
-					});
-				html5QrcodeScanner.render(onScanSuccess, onScanError);
-				document.getElementById('reader').style.display = 'block'; // 显示扫描区域
-			}
+    function startScanner() {
+        // 选择后置摄像头，通常后置摄像头的ID在设备上是0
+        Html5Qrcode.getCameras().then(function(devices) {
+            if (devices && devices.length > 0) {
+                // 找到后置摄像头（通常是ID为1）
+                const backCamera = devices.find(device => device.id !== devices[0].id); // 选择第二个设备作为后置摄像头
+                if (backCamera) {
+                    // 启动相机扫描
+                    html5QrcodeScanner = new Html5QrcodeScanner(
+                        "reader", {
+                            fps: 10,
+                            qrbox: 250,
+                            qrCodeSuccessCallback: onScanSuccess,
+                            qrCodeErrorCallback: onScanError,
+                            preferredCameraId: backCamera.id // 指定使用后置摄像头
+                        });
+                    html5QrcodeScanner.render(onScanSuccess, onScanError);
+                    document.getElementById('reader').style.display = 'block'; // 显示扫描区域
+                }
+            }
+        }).catch(function(error) {
+            console.error("获取摄像头失败", error);
+        });
+    }
 
-			function stopScanner() {
-				// 停止相机扫描
-				if (html5QrcodeScanner) {
-					html5QrcodeScanner.clear();
-					document.getElementById('reader').style.display = 'none'; // 隐藏扫描区域
-				}
-			}
-		</script>
+    function stopScanner() {
+        // 停止相机扫描
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear();
+            document.getElementById('reader').style.display = 'none'; // 隐藏扫描区域
+        }
+    }
+</script>
 
-	</body>
+</body>
 </html>
