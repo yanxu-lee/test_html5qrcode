@@ -1,95 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>读取品标SN</title>
-    <script src="html5-qrcode.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+	<head>
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>读取品标SN</title>
+		<script src="html5-qrcode.min.js"></script>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
 
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px;
-        }
+			.container {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				padding: 10px;
+				position: relative;
+			}
 
-        #reader {
-            width: 100%;
-            max-width: 500px;
-            height: auto;
-            margin-bottom: 20px;
-        }
+			#reader {
+				width: 100%;
+				max-width: 500px;
+				height: auto;
+				margin-bottom: 20px;
+			}
 
-        .result {
-            background-color: green;
-            color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 5px;
-            word-wrap: break-word;
-            margin-top: 20px; /* Ensure space between QR reader and result */
-        }
+			.result {
+				background-color: green;
+				color: white;
+				padding: 20px;
+				text-align: center;
+				border-radius: 5px;
+				word-wrap: break-word;
+				margin-top: 20px;
+				position: relative;
+				transition: all 0.3s ease;
+			}
 
-        .header {
-            margin-top: 20px;
-            text-align: center;
-        }
+			.header {
+				margin-top: 20px;
+				text-align: center;
+			}
 
-        .row {
-            width: 100%;
-            max-width: 500px;
-            position: relative; /* Ensures that the result is not hidden */
-        }
+			.row {
+				width: 100%;
+				max-width: 500px;
+				position: relative;
+			}
 
-        @media (max-width: 768px) {
-            #reader {
-                max-width: 100%;
-                height: 250px;
-            }
+			@media (max-width: 768px) {
+				#reader {
+					max-width: 100%;
+					height: 250px;
+				}
 
-            .result {
-                padding: 15px;
-                font-size: 14px;
-            }
-        }
-    </style>
-</head>
-<body>
+				.result {
+					padding: 15px;
+					font-size: 14px;
+				}
+			}
+		</style>
+	</head>
+	<body>
 
-<div class="container">
-    <div class="row">
-        <div id="reader"></div>
-    </div>
-    <div class="row">
-        <h4 class="header">SCAN RESULT</h4>
-        <div id="result" class="result">Result Here</div>
-    </div>
-</div>
+		<div class="container">
+			<div class="row">
+				<div id="reader"></div>
+			</div>
+			<div class="row" id="result-container">
+				<h4 class="header">SCAN RESULT</h4>
+				<div id="result" class="result">Result Here</div>
+			</div>
+		</div>
 
-<script type="text/javascript">
-    function onScanSuccess(qrCodeMessage) {
-        document.getElementById('result').innerHTML = '<span class="result">' + qrCodeMessage + '</span>';
-    }
+		<script type="text/javascript">
+			function onScanSuccess(qrCodeMessage) {
+				// Move the result container below the scanner when scan starts
+				document.getElementById('result-container').style.position = 'absolute';
+				document.getElementById('result-container').style.top = document.getElementById('reader').offsetHeight + 'px';
+				document.getElementById('result').innerHTML = '<span class="result">' + qrCodeMessage + '</span>';
+			}
 
-    function onScanError(errorMessage) {
-        //handle scan error
-    }
+			function onScanError(errorMessage) {
+				// handle scan error
+			}
 
-    var html5QrcodeScanner = new Html5QrcodeScanner(
-        "reader", {
-            fps: 10,
-            qrbox: 250
-        });
-    html5QrcodeScanner.render(onScanSuccess, onScanError);
-</script>
+			var html5QrcodeScanner = new Html5QrcodeScanner(
+				"reader", {
+					fps: 10,
+					qrbox: 250
+				});
+			html5QrcodeScanner.render(onScanSuccess, onScanError);
+		</script>
 
-</body>
+	</body>
 </html>
