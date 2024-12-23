@@ -4,32 +4,21 @@
 		<meta charset="UTF-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>读取品标SN.</title>
+		<title>读取品标SN</title>
 		<script src="html5-qrcode.min.js"></script>
-		<style>
-			.result {
-				background-color: green;
-				color: #fff;
-				padding: 20px;
-			}
-
-			.row {
-				display: flex;
-			}
-		</style>
+		<link rel="stylesheet" href="main.css" type="text/css">
 	</head>
 	<body>
 
-		<div class="row">
-			<div class="col">
-				<div style="width:500px;" id="reader"></div>
+		<div class="container">
+			<div class="row">
+				<div id="reader"></div>
 			</div>
-			<div class="col" style="padding:30px;">
-				<h4>SCAN RESULT</h4>
-				<div id="result">Result Here</div>
+			<div class="row">
+				<h4 class="header">SCAN RESULT</h4>
+				<div id="result" class="result">Result Here</div>
 			</div>
 		</div>
-
 
 		<script type="text/javascript">
 			function onScanSuccess(qrCodeMessage) {
@@ -47,5 +36,6 @@
 				});
 			html5QrcodeScanner.render(onScanSuccess, onScanError);
 		</script>
+
 	</body>
 </html>
