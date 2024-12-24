@@ -18,7 +18,8 @@
 				display: flex;
 				flex-direction: column;
 				align-items: center;
-				padding: 20px;
+				padding: 19px;
+				padding-top: 69px;
 				position: relative;
 			}
 
@@ -46,15 +47,16 @@
 
 			#reader {
 				width: 100%;
-				max-width: 500px;
-				height: auto;
+				max-width: 100%;
+				height: 100%;
+				aspect-ratio: 16/9;
 				margin-top: 20px;
 			}
 
 			@media (max-width: 768px) {
 				#reader {
-					max-width: 100%;
-					height: 250px;
+					height: 300px;
+					aspect-ratio: unset;
 				}
 			}
 		</style>
@@ -63,8 +65,8 @@
 
 		<div class="container">
 			<div class="input-container">
-				<input type="text" id="input-field" placeholder="扫描结果会显示在这里">
-				<button id="scan-btn" onclick="startScanner()">扫描二维码</button>
+				<input type="text" id="input-field" placeholder="No. 请输入">
+				<button id="scan-btn" onclick="startScanner()">相机扫一扫</button>
 			</div>
 			<div id="reader" style="display: none;"></div>
 		</div>
@@ -72,50 +74,49 @@
 		<script type="text/javascript">
 			let html5QrCode;
 
-			function onScanSuccess(qrCodeMessage) {
+			function onScanSuccess(decodedText) {
 				// 将扫描结果填入输入框
-				document.getElementById('input-field').value = qrCodeMessage;
-				stopScanner(); // 扫描成功后停止扫描
+				document.getElementById('input-field').value = decodedText;
+				stopScanner(); // 停止扫描
 			}
 
-			function onScanError(errorMessage) {
-				// 处理扫描错误，可以为空
+			function onScanError(error) {
+				console.error("扫描错误：", error); // 可以添加其他错误提示逻辑
 			}
 
 			function startScanner() {
 				const readerElement = document.getElementById('reader');
 				readerElement.style.display = 'block'; // 显示扫描区域
 
-				// 创建 HTML5QRCode 实例
 				html5QrCode = new Html5Qrcode("reader");
 
-				// 自动选择后置摄像头
+				// 自动选择后置摄像头并启动扫描
 				Html5Qrcode.getCameras().then((devices) => {
 					if (devices && devices.length > 0) {
 						const backCamera = devices.find(device => device.label.toLowerCase().includes("back")) ||
 							devices[0];
 						if (backCamera) {
 							html5QrCode.start(
-								backCamera.id, // 使用后置摄像头
-								{
+								backCamera.id, {
 									fps: 10, // 每秒扫描帧数
 									qrbox: {
-										width: 250,
-										height: 250
-									} // 扫描区域大小
+										width: 400,
+										height: 300
+									}, // 扩大扫描区域
+									aspectRatio: 1.7778, // 摄像头比例16:9
+									supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA] // 支持扫描模式
 								},
 								onScanSuccess,
 								onScanError
-							);
+							).catch(err => {
+								console.error("启动扫描失败：", err);
+							});
 						}
 					} else {
-						alert("未检测到摄像头设备");
-						stopScanner();
+						alert("未检测到摄像头！");
 					}
 				}).catch(err => {
-					console.error("获取摄像头失败", err);
-					alert("无法启动摄像头，请检查设备权限！");
-					stopScanner();
+					console.error("获取摄像头失败：", err);
 				});
 			}
 
@@ -124,9 +125,9 @@
 				readerElement.style.display = 'none'; // 隐藏扫描区域
 				if (html5QrCode) {
 					html5QrCode.stop().then(() => {
-						html5QrCode.clear(); // 停止并清理扫描器
+						html5QrCode.clear();
 					}).catch(err => {
-						console.error("停止扫描器失败", err);
+						console.error("停止扫描失败：", err);
 					});
 				}
 			}
