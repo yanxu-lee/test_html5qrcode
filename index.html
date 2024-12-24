@@ -4,7 +4,7 @@
 		<meta charset="UTF-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>读取品标SN</title>
+		<title>扫一扫SN</title>
 		<script src="html5-qrcode.min.js"></script>
 		<style>
 			body {
@@ -18,7 +18,7 @@
 				display: flex;
 				flex-direction: column;
 				align-items: center;
-				padding-top: 106px;
+				padding: 20px;
 				position: relative;
 			}
 
@@ -63,14 +63,14 @@
 
 		<div class="container">
 			<div class="input-container">
-				<input type="text" id="input-field" placeholder="No. 请输入">
-				<button id="scan-btn" onclick="startScanner()">相机扫一扫</button>
+				<input type="text" id="input-field" placeholder="扫描结果会显示在这里">
+				<button id="scan-btn" onclick="startScanner()">扫描二维码</button>
 			</div>
-			<div id="reader"></div>
+			<div id="reader" style="display: none;"></div>
 		</div>
 
 		<script type="text/javascript">
-			var html5QrcodeScanner;
+			let html5QrCode;
 
 			function onScanSuccess(qrCodeMessage) {
 				// 将扫描结果填入输入框
@@ -83,35 +83,51 @@
 			}
 
 			function startScanner() {
-				// 选择后置摄像头，通常后置摄像头的ID在设备上是0
-				Html5Qrcode.getCameras().then(function(devices) {
+				const readerElement = document.getElementById('reader');
+				readerElement.style.display = 'block'; // 显示扫描区域
+
+				// 创建 HTML5QRCode 实例
+				html5QrCode = new Html5Qrcode("reader");
+
+				// 自动选择后置摄像头
+				Html5Qrcode.getCameras().then((devices) => {
 					if (devices && devices.length > 0) {
-						// 找到后置摄像头（通常是ID为1）
-						const backCamera = devices.find(device => device.id !== devices[0].id); // 选择第二个设备作为后置摄像头
+						const backCamera = devices.find(device => device.label.toLowerCase().includes("back")) ||
+							devices[0];
 						if (backCamera) {
-							// 启动相机扫描
-							html5QrcodeScanner = new Html5QrcodeScanner(
-								"reader", {
-									fps: 10,
-									qrbox: 250,
-									qrCodeSuccessCallback: onScanSuccess,
-									qrCodeErrorCallback: onScanError,
-									preferredCameraId: backCamera.id // 指定使用后置摄像头
-								});
-							html5QrcodeScanner.render(onScanSuccess, onScanError);
-							document.getElementById('reader').style.display = 'block'; // 显示扫描区域
+							html5QrCode.start(
+								backCamera.id, // 使用后置摄像头
+								{
+									fps: 10, // 每秒扫描帧数
+									qrbox: {
+										width: 250,
+										height: 250
+									} // 扫描区域大小
+								},
+								onScanSuccess,
+								onScanError
+							);
 						}
+					} else {
+						alert("未检测到摄像头设备");
+						stopScanner();
 					}
-				}).catch(function(error) {
-					console.error("获取摄像头失败", error);
+				}).catch(err => {
+					console.error("获取摄像头失败", err);
+					alert("无法启动摄像头，请检查设备权限！");
+					stopScanner();
 				});
 			}
 
 			function stopScanner() {
-				// 停止相机扫描
-				if (html5QrcodeScanner) {
-					html5QrcodeScanner.clear();
-					document.getElementById('reader').style.display = 'none'; // 隐藏扫描区域
+				const readerElement = document.getElementById('reader');
+				readerElement.style.display = 'none'; // 隐藏扫描区域
+				if (html5QrCode) {
+					html5QrCode.stop().then(() => {
+						html5QrCode.clear(); // 停止并清理扫描器
+					}).catch(err => {
+						console.error("停止扫描器失败", err);
+					});
 				}
 			}
 		</script>
